@@ -171,7 +171,9 @@ void main() {
   // Trace ray multiple times, take average
   vec3 avg_color = vec3(0.0);
   for (int i = 0; i < NUM_RAYS; i++) {
+    // Trace ray
     avg_color += trace_ray(ray, seed);
+    // Update random seed
     seed *= 32487636u;
   }
   avg_color /= float(NUM_RAYS);
