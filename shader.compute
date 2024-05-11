@@ -1,0 +1,182 @@
+#version 430 core
+layout (local_size_x = 32, local_size_y = 32, local_size_z = 1) in;
+layout (rgba32f, binding = 0) uniform image2D img;
+
+/* Uniforms */
+uniform float width;
+uniform float height;
+uniform float focal_length;
+uniform uint random_seed;
+
+// Constants
+#define MAX_BOUNCES   12
+#define NUM_RAYS      12
+#define NUM_SPHERES   4
+#define PI            3.14159265359
+#define INFINITY      (1.0/0.0)
+
+// Material
+struct Material {
+  vec3 albedo;
+  float roughness;
+  float emission_strength;
+  vec3 emission_color;
+};
+
+// Sphere
+struct Sphere {
+  vec3 center;
+  float radius;
+  Material material;
+};
+
+// Ray
+struct Ray {
+  vec3 origin;
+  vec3 direction;
+};
+
+// Hit info
+struct HitInfo {
+  bool did_hit;
+  float distance;
+  vec3 position;
+  vec3 normal;
+  Material material;
+};
+
+// Spheres
+Sphere spheres[NUM_SPHERES] = {
+  Sphere(vec3(0.0,  0.0, 8.0), 3.5, Material(vec3(1.0), 0.0, 64.0, vec3(1.0))),
+  Sphere(vec3(1.0,  0.5, 5.0), 1.0, Material(vec3(0.3, 0.4, 0.5), 0.2, 0.0, vec3(0.0))),
+  Sphere(vec3(0.7, -1.5, 2.8), 1.2, Material(vec3(0.5, 0.2, 0.0), 0.7, 0.0, vec3(0.0))),
+  Sphere(vec3(0.2,  0.5, 3.2), 0.5, Material(vec3(0.3, 0.5, 0.8), 0.3, 0.3, vec3(0.3, 0.5, 0.8)))
+};
+
+// RNG
+float random_number(inout uint state) {
+    state = state * 747796405u + 2891336453u;
+    uint result = ((state >> ((state >> 28u) + 4u)) ^ state) * 277803737u;
+	result = (result >> 22) ^ result;
+    return float(result) / 4294967295.0;
+}
+// In normal weighted distribution
+float random_number_normal(inout uint state) {
+    float theta = 2.0 * PI * random_number(state);
+    float rho = sqrt(-2.0 * log(random_number(state)));
+    return rho * cos(theta);
+}
+// A random direction
+vec3 random_direction(inout uint state) {
+    float x = random_number_normal(state);
+    float y = random_number_normal(state);
+    float z = random_number_normal(state);
+    return (vec3(x, y, z));
+}
+// Random hemisphere direction
+vec3 random_hemisphere_direction(inout uint state, vec3 normal) {
+    vec3 res = random_direction(state);
+    return res * sign(dot(normal, res));
+}
+
+// Intersection with a sphere
+HitInfo intersection_sphere(Sphere sphere, Ray ray) {
+  HitInfo hit_info;
+  hit_info.did_hit = false;
+  hit_info.distance = INFINITY;
+  hit_info.position = vec3(0.0);
+  hit_info.normal = vec3(0.0);
+  hit_info.material = sphere.material;
+
+  vec3 oc = ray.origin - sphere.center;
+  float a = dot(ray.direction, ray.direction);
+  float b = 2.0 * dot(oc, ray.direction);
+  float c = dot(oc, oc) - sphere.radius * sphere.radius;
+  float discriminant = b * b - 4.0 * a * c;
+  if (discriminant < 0.0) {
+    return hit_info;
+  }
+  float t = (-b - sqrt(discriminant)) / (2.0 * a);
+  if (t > 0.0) {
+    hit_info.did_hit = true;
+    hit_info.distance = t;
+    hit_info.position = ray.origin + ray.direction * t;
+    hit_info.normal = (hit_info.position - sphere.center) / sphere.radius;
+  }
+  return hit_info;
+}
+// Closest intersection
+HitInfo closest_intersection(Ray ray) {
+  HitInfo closest_hit_info;
+  closest_hit_info.did_hit = false;
+  closest_hit_info.distance = INFINITY;
+  closest_hit_info.position = vec3(0.0);
+  closest_hit_info.normal = vec3(0.0);
+  closest_hit_info.material = spheres[0].material;
+  for (int i = 0; i < NUM_SPHERES; i++) {
+    HitInfo hit_info = intersection_sphere(spheres[i], ray);
+    if (hit_info.did_hit && hit_info.distance < closest_hit_info.distance) {
+      closest_hit_info = hit_info;
+    }
+  }
+  return closest_hit_info;
+}
+// Trace ray
+vec3 trace_ray(Ray ray, inout uint rand_seed) {
+  vec3 incoming_light = vec3(0.0);
+  vec3 ray_color = vec3(1.0);
+
+  for (int i = 0; i < MAX_BOUNCES; i++) {
+    HitInfo hit_info = closest_intersection(ray);
+    if (hit_info.did_hit) {
+      ray.origin = hit_info.position;
+      vec3 diffuse = random_hemisphere_direction(rand_seed, hit_info.normal);
+      vec3 specular = hit_info.normal;
+      ray.direction = mix(specular, diffuse, hit_info.material.roughness);
+
+      Material material = hit_info.material;
+      vec3 emitted_light = material.emission_color * material.emission_strength;
+      incoming_light += emitted_light * ray_color;
+      ray_color *= material.albedo;
+
+    } else {
+      break;
+    }
+  }
+
+  return incoming_light;
+}
+
+// Main function
+void main() {
+  // Setup
+  vec4 color = vec4(vec3(0.0), 1.0);
+  ivec2 texture_coord = ivec2(gl_GlobalInvocationID.xy);
+  uint seed = random_seed * gl_GlobalInvocationID.x + gl_GlobalInvocationID.y * 32487636u;
+  
+  // Get ray target position
+  vec2 ray_target = vec2(0.0);
+  ray_target.x = float(texture_coord.x) / (gl_NumWorkGroups.x*gl_WorkGroupSize.x);
+  ray_target.y = float(texture_coord.y) / (gl_NumWorkGroups.y*gl_WorkGroupSize.y);
+  ray_target.x *= 2.0; ray_target.x -= 1.0;
+  ray_target.y *= 2.0; ray_target.y -= 1.0;
+  ray_target.y /= width / height;
+  //ray_target.y /= height / width;
+
+  // Set ray properties
+  Ray ray;
+  ray.origin = vec3(0.0);
+  ray.direction = normalize(vec3(ray_target, focal_length));
+
+  // Trace ray multiple times, take average
+  vec3 avg_color = vec3(0.0);
+  for (int i = 0; i < NUM_RAYS; i++) {
+    avg_color += trace_ray(ray, seed);
+    seed *= 32487636u;
+  }
+  avg_color /= float(NUM_RAYS);
+  color = vec4(avg_color, 1.0);
+
+  // Return color
+  imageStore(img, texture_coord, color);
+}
