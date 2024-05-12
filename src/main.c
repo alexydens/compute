@@ -21,22 +21,22 @@
 /* Globals */
 struct {
   /* Window */
-  SDL_Window *window;     /* Window handle */
-  SDL_GLContext context;  /* OpenGL context handle */
-  bool running;           /* Is the window running? */
-  i32 width, height;      /* Window dimensions */
+  SDL_Window *window;           /* Window handle */
+  SDL_GLContext context;        /* OpenGL context handle */
+  bool running;                 /* Is the window running? */
+  i32 width, height;            /* Window dimensions */
   /* OpenGL */
-  u32 vbo;                /* Vertex buffer object */
-  u32 vao;                /* Vertex array object */
-  u32 shader_program;     /* Shader program */
-  u32 texture;            /* Texture */
-  u32 compute_shader;     /* Compute shader */
+  u32 vbo;                      /* Vertex buffer object */
+  u32 vao;                      /* Vertex array object */
+  u32 shader_program;           /* Shader program */
+  u32 texture;                  /* Texture */
+  u32 compute_shader;           /* Compute shader */
   /* Other state */
-  f32 focal_length;       /* Focal length */
-  u32 ticks;              /* Ticks since last movement */
-  f32 delta_time;         /* Delta time */
-  f32 fps;                /* Frames per second */
-  f32 test_in;            /* An input used for testing */
+  f32 focal_length;             /* Focal length */
+  u32 ticks;                    /* Ticks since last movement */
+  f32 delta_time;               /* Delta time */
+  f32 fps;                      /* Frames per second */
+  f32 test_in;                  /* An input used for testing */
 } state;
 
 /* Consts */
@@ -266,7 +266,6 @@ int main(void) {
               event.window.data2
           );
           /* Update viewport */
-          NH_INFO("Updating viewport...");
           glViewport(0, 0, event.window.data1, event.window.data2);
           /* Update state */
           state.width = event.window.data1;

@@ -23,6 +23,8 @@ struct Material {
   float roughness;
   float emission_strength;
   vec3 emission_color;
+  float specular_probability;
+  vec3 specular_color;
 };
 
 // Sphere
@@ -58,37 +60,44 @@ Sphere spheres[NUM_SPHERES] = {
 };
 */
 Sphere spheres[NUM_SPHERES] = {
-  Sphere(vec3(0.0, 3.0, 4.5), 1.5, Material(vec3(0.0), 0.0, test_in, vec3(1.0))),
-  Sphere(vec3(-3.0, 0.0, 5.0), 1.0, Material(vec3(1.0, 0.0, 1.0), 1.00, 0.0, vec3(0.0))),
-  Sphere(vec3(-1.0, 0.0, 5.0), 1.0, Material(vec3(1.0, 1.0, 0.0), 1.00, 0.0, vec3(0.0))),
-  Sphere(vec3( 1.0, 0.0, 5.0), 1.0, Material(vec3(0.0, 1.0, 1.0), 1.00, 0.0, vec3(0.0))),
-  Sphere(vec3( 3.0, 0.0, 5.0), 1.0, Material(vec3(1.0, 0.0, 0.0), 1.00, 0.0, vec3(0.0))),
+/*
+  Sphere(vec3(0.0, 3.0, 3.5), 1.5, Material(vec3(0.0), 0.0, test_in, vec3(1.0), 0.0, vec3(1.0))),
+  Sphere(vec3(-3.0, 0.0, 5.0), 1.0, Material(vec3(1.0, 0.0, 1.0), 0.75, 0.0, vec3(0.0), 0.0, vec3(0.0))),
+  Sphere(vec3(-1.0, 0.0, 5.0), 1.0, Material(vec3(1.0, 1.0, 0.0), 0.75, 0.0, vec3(0.0), 0.0, vec3(0.0))),
+  Sphere(vec3( 1.0, 0.0, 5.0), 1.0, Material(vec3(0.0, 1.0, 1.0), 0.75, 0.0, vec3(0.0), 0.0, vec3(0.0))),
+  Sphere(vec3( 3.0, 0.0, 5.0), 1.0, Material(vec3(1.0, 0.0, 0.0), 0.75, 0.0, vec3(0.0), 0.0, vec3(0.0))),
+*/
+  Sphere(vec3(0.0, 3.0, 3.5), 1.5, Material(vec3(0.0), 0.0, test_in, vec3(1.0, 0.8, 0.5), 0.0, vec3(0.0))),
+  Sphere(vec3(-3.0, 0.0, 5.0), 1.0, Material(vec3(1.0), 0.75, 0.0, vec3(0.0), 0.8, vec3(1.0))),
+  Sphere(vec3(-1.0, 0.0, 5.0), 1.0, Material(vec3(1.0), 0.75, 0.0, vec3(0.0), 0.8, vec3(1.0))),
+  Sphere(vec3( 1.0, 0.0, 5.0), 1.0, Material(vec3(1.0), 0.75, 0.0, vec3(0.0), 0.8, vec3(1.0))),
+  Sphere(vec3( 3.0, 0.0, 5.0), 1.0, Material(vec3(1.0), 0.75, 0.0, vec3(0.0), 0.8, vec3(1.0))),
 };
 
 // RNG
 float random_number(inout uint state) {
-    state = state * 747796405u + 2891336453u;
-    uint result = ((state >> ((state >> 28u) + 4u)) ^ state) * 277803737u;
+  state = state * 747796405u + 2891336453u;
+  uint result = ((state >> ((state >> 28u) + 4u)) ^ state) * 277803737u;
 	result = (result >> 22) ^ result;
-    return float(result) / 4294967295.0;
+  return float(result) / 4294967295.0;
 }
 // In normal weighted distribution
 float random_number_normal(inout uint state) {
-    float theta = 2.0 * PI * random_number(state);
-    float rho = sqrt(-2.0 * log(random_number(state)));
-    return rho * cos(theta);
+  float theta = 2.0 * PI * random_number(state);
+  float rho = sqrt(-2.0 * log(random_number(state)));
+  return rho * cos(theta);
 }
 // A random direction
 vec3 random_direction(inout uint state) {
-    float x = random_number_normal(state);
-    float y = random_number_normal(state);
-    float z = random_number_normal(state);
-    return (vec3(x, y, z));
+  float x = random_number_normal(state);
+  float y = random_number_normal(state);
+  float z = random_number_normal(state);
+  return (vec3(x, y, z));
 }
 // Random hemisphere direction
 vec3 random_hemisphere_direction(inout uint state, vec3 normal) {
-    vec3 res = random_direction(state);
-    return res * sign(dot(normal, res));
+  vec3 res = random_direction(state);
+  return res * sign(dot(normal, res));
 }
 
 // Intersection with a sphere
@@ -108,12 +117,12 @@ HitInfo intersection_sphere(Sphere sphere, Ray ray) {
   if (discriminant < 0.0) {
     return hit_info;
   }
-  float t = (-b + sqrt(discriminant)) / (2.0 * a);
+  float t = (-b - sqrt(discriminant)) / (2.0 * a);
   if (t > 0.0) {
     hit_info.did_hit = true;
     hit_info.distance = t;
-    hit_info.position = ray.origin + ray.direction * t;
-    hit_info.normal = (hit_info.position - sphere.center) / sphere.radius;
+    hit_info.position = ray.origin + normalize(ray.direction) * t;
+    hit_info.normal = normalize(hit_info.position - sphere.center);
   }
   return hit_info;
 }
@@ -143,16 +152,17 @@ vec3 trace_ray(Ray ray, inout uint rand_seed) {
     HitInfo hit_info = closest_intersection(ray);
     if (hit_info.did_hit) {
       no_hit = false;
+      Material material = hit_info.material;
       ray.origin = hit_info.position;
       //vec3 diffuse = random_hemisphere_direction(rand_seed, hit_info.normal);
       vec3 diffuse = normalize(hit_info.normal + random_direction(rand_seed));
       vec3 specular = hit_info.normal;
-      ray.direction = mix(specular, diffuse, hit_info.material.roughness);
+      bool is_specular = random_number(rand_seed) < material.specular_probability;
+      ray.direction = mix(specular, diffuse, hit_info.material.roughness * float(!is_specular));
 
-      Material material = hit_info.material;
       vec3 emitted_light = material.emission_color * material.emission_strength;
       incoming_light += emitted_light * ray_color;
-      ray_color *= material.albedo;
+      ray_color *= mix(material.albedo, material.specular_color, float(is_specular));
 
     } else {
       break;
@@ -170,8 +180,7 @@ void main() {
   // Setup
   vec4 color = vec4(vec3(0.0), 1.0);
   ivec2 texture_coord = ivec2(gl_GlobalInvocationID.xy);
-  uint seed = random_seed * gl_GlobalInvocationID.x * gl_GlobalInvocationID.y;
-  seed *= seed;
+  uint seed = random_seed * gl_GlobalInvocationID.x + gl_GlobalInvocationID.y;
   
   // Get ray target position
   vec2 ray_target = vec2(0.0);
@@ -192,15 +201,14 @@ void main() {
   for (int i = 0; i < NUM_RAYS; i++) {
     // Trace ray
     avg_color += trace_ray(ray, seed);
-    // Update random seed
-    seed *= 32487636u;
   }
   avg_color /= float(NUM_RAYS);
   color = vec4(avg_color, 1.0);
 
   // Return color
-  vec3 prev_color = imageLoad(img, texture_coord).rgb;
-  color.rgb = mix(prev_color, color.rgb, 1.0 / float(ticks + 1));
-  //color = vec4(0.2, 0.5, 1.0, 1.0);
+  vec4 prev_color = imageLoad(img, texture_coord);
+  //color.rgb = mix(prev_color.rgb, color.rgb, 1.0 / float(ticks + 1));
+  float weight = 1.0 / float(ticks + 1);
+  color = prev_color * (1 - weight) + color * weight;
   imageStore(img, texture_coord, color);
 }
