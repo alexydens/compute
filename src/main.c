@@ -14,6 +14,10 @@
 /* Project headers */
 #include "loadgl.h"
 
+/* Consts */
+#define COMPUTE_WIDTH  512
+#define COMPUTE_HEIGHT 512
+
 /* Globals */
 struct {
   /* Window */
@@ -30,6 +34,9 @@ struct {
   /* Other state */
   f32 focal_length;       /* Focal length */
   u32 ticks;              /* Ticks since last movement */
+  f32 delta_time;         /* Delta time */
+  f32 fps;                /* Frames per second */
+  f32 test_in;            /* An input used for testing */
 } state;
 
 /* Consts */
@@ -218,16 +225,16 @@ int main(void) {
   glBindTexture(GL_TEXTURE_2D, state.texture);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
   /*glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);*/
   /*glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);*/
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
   glTexImage2D(
       GL_TEXTURE_2D,
       0,
       GL_RGBA32F,
-      1024, /* Width */
-      1024, /* Height */
+      COMPUTE_WIDTH, /* Width */
+      COMPUTE_HEIGHT, /* Height */
       0,
       GL_RGBA,
       GL_UNSIGNED_BYTE,
@@ -239,7 +246,12 @@ int main(void) {
   /* Main loop */
   state.running = true;
   state.focal_length = 1.0f;
+  state.test_in = 0.0f;
   while (state.running) {
+    /* Delta time - 1 */
+    u64 start = SDL_GetPerformanceCounter();
+
+    /* Event loop */
     SDL_Event event;
     while (SDL_PollEvent(&event)) {
       if (event.type == SDL_QUIT) {
@@ -259,19 +271,27 @@ int main(void) {
           /* Update state */
           state.width = event.window.data1;
           state.height = event.window.data2;
+          /* Reset ticks */
+          state.ticks = 0;
         }
       }
     }
 
     /* Check for keydown */
     if (SDL_GetKeyboardState(NULL)[SDL_SCANCODE_UP]) {
-      if (state.focal_length < 2.5f)
-        state.focal_length += 0.01f;
+      state.focal_length += 2.0f * state.delta_time;
       state.ticks = 0;
     }
     if (SDL_GetKeyboardState(NULL)[SDL_SCANCODE_DOWN]) {
-      if (state.focal_length > 0.2f)
-        state.focal_length -= 0.01f;
+      state.focal_length -= 2.0f * state.delta_time;
+      state.ticks = 0;
+    }
+    if (SDL_GetKeyboardState(NULL)[SDL_SCANCODE_KP_PLUS]) {
+      state.test_in += 20.0f * state.delta_time;
+      state.ticks = 0;
+    }
+    if (SDL_GetKeyboardState(NULL)[SDL_SCANCODE_KP_MINUS]) {
+      state.test_in -= 20.0f * state.delta_time;
       state.ticks = 0;
     }
 
@@ -290,12 +310,12 @@ int main(void) {
     glUniform1f(glGetUniformLocation(state.compute_shader, "width"), (f32)state.width);
     glUniform1f(glGetUniformLocation(state.compute_shader, "height"), (f32)state.height);
     glUniform1f(glGetUniformLocation(state.compute_shader, "focal_length"), state.focal_length);
-    srand(state.ticks * time(NULL));
+    glUniform1f(glGetUniformLocation(state.compute_shader, "test_in"), (f32)state.test_in);
     glUniform1ui(glGetUniformLocation(state.compute_shader, "random_seed"), rand());
     glUniform1ui(glGetUniformLocation(state.compute_shader, "ticks"), state.ticks);
 
     /* Dispatch compute shader */
-    glDispatchCompute(1024 / 32, 1024 / 32, 1);
+    glDispatchCompute(COMPUTE_WIDTH / 32, COMPUTE_HEIGHT / 32, 1);
     glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
 
     /* Draw */
@@ -311,6 +331,14 @@ int main(void) {
 
     /* Increment ticks */
     state.ticks++;
+
+    /* Delta time - 2 */
+    u64 end = SDL_GetPerformanceCounter();
+    f64 delta = (f64)(end - start) / (f64)SDL_GetPerformanceFrequency();
+    state.delta_time = delta;
+    state.fps = 1.0f / delta;
+    if (state.ticks % 80 == 0)
+      NH_INFO("Delta time: %f, FPS: %f", delta, state.fps);
   }
 
   /* Clean up */

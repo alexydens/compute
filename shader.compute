@@ -6,11 +6,12 @@ layout (rgba32f, binding = 0) uniform image2D img;
 uniform float width;
 uniform float height;
 uniform float focal_length;
+uniform float test_in;
 uniform uint random_seed;
 uniform uint ticks;
 
 // Constants
-#define MAX_BOUNCES   32
+#define MAX_BOUNCES   12
 #define NUM_RAYS      64
 #define NUM_SPHERES   5
 #define PI            3.14159265359
@@ -47,13 +48,21 @@ struct HitInfo {
 };
 
 // Spheres
+/*
 Sphere spheres[NUM_SPHERES] = {
-  //Sphere(vec3(0.0,  0.0, 8.0), 3.5, Material(vec3(1.0), 0.0, 64.0, vec3(1.0))),
   Sphere(vec3(0.0,  0.0, 50.0), 35.0, Material(vec3(1.0), 0.0, 64.0, vec3(1.0))),
   Sphere(vec3(1.0,  0.5, 5.0), 1.0, Material(vec3(0.3, 0.4, 0.5), 0.2, 0.0, vec3(0.0))),
   Sphere(vec3(0.7, -1.5, 2.8), 1.2, Material(vec3(0.5, 0.2, 0.0), 0.7, 0.0, vec3(0.0))),
   Sphere(vec3(0.2,  0.5, 3.2), 0.5, Material(vec3(0.3, 0.5, 0.8), 0.3, 0.0, vec3(0.0))),
   Sphere(vec3(0.5), 0.2, Material(vec3(0.0), 0.0, 32.0, vec3(1.0, 0.7, 0.3))),
+};
+*/
+Sphere spheres[NUM_SPHERES] = {
+  Sphere(vec3(0.0, 3.0, 4.5), 1.5, Material(vec3(0.0), 0.0, test_in, vec3(1.0))),
+  Sphere(vec3(-3.0, 0.0, 5.0), 1.0, Material(vec3(1.0, 0.0, 1.0), 1.00, 0.0, vec3(0.0))),
+  Sphere(vec3(-1.0, 0.0, 5.0), 1.0, Material(vec3(1.0, 1.0, 0.0), 1.00, 0.0, vec3(0.0))),
+  Sphere(vec3( 1.0, 0.0, 5.0), 1.0, Material(vec3(0.0, 1.0, 1.0), 1.00, 0.0, vec3(0.0))),
+  Sphere(vec3( 3.0, 0.0, 5.0), 1.0, Material(vec3(1.0, 0.0, 0.0), 1.00, 0.0, vec3(0.0))),
 };
 
 // RNG
@@ -99,7 +108,7 @@ HitInfo intersection_sphere(Sphere sphere, Ray ray) {
   if (discriminant < 0.0) {
     return hit_info;
   }
-  float t = (-b - sqrt(discriminant)) / (2.0 * a);
+  float t = (-b + sqrt(discriminant)) / (2.0 * a);
   if (t > 0.0) {
     hit_info.did_hit = true;
     hit_info.distance = t;
@@ -128,12 +137,15 @@ HitInfo closest_intersection(Ray ray) {
 vec3 trace_ray(Ray ray, inout uint rand_seed) {
   vec3 incoming_light = vec3(0.0);
   vec3 ray_color = vec3(1.0);
+  bool no_hit = true;
 
   for (int i = 0; i < MAX_BOUNCES; i++) {
     HitInfo hit_info = closest_intersection(ray);
     if (hit_info.did_hit) {
+      no_hit = false;
       ray.origin = hit_info.position;
-      vec3 diffuse = random_hemisphere_direction(rand_seed, hit_info.normal);
+      //vec3 diffuse = random_hemisphere_direction(rand_seed, hit_info.normal);
+      vec3 diffuse = normalize(hit_info.normal + random_direction(rand_seed));
       vec3 specular = hit_info.normal;
       ray.direction = mix(specular, diffuse, hit_info.material.roughness);
 
@@ -147,7 +159,10 @@ vec3 trace_ray(Ray ray, inout uint rand_seed) {
     }
   }
 
-  return incoming_light;
+  if (no_hit)
+   return vec3(0.05, 0.125, 0.25);
+  else
+    return incoming_light;
 }
 
 // Main function
@@ -155,7 +170,8 @@ void main() {
   // Setup
   vec4 color = vec4(vec3(0.0), 1.0);
   ivec2 texture_coord = ivec2(gl_GlobalInvocationID.xy);
-  uint seed = random_seed * gl_GlobalInvocationID.x + gl_GlobalInvocationID.y * 32487636u;
+  uint seed = random_seed * gl_GlobalInvocationID.x * gl_GlobalInvocationID.y;
+  seed *= seed;
   
   // Get ray target position
   vec2 ray_target = vec2(0.0);
@@ -185,5 +201,6 @@ void main() {
   // Return color
   vec3 prev_color = imageLoad(img, texture_coord).rgb;
   color.rgb = mix(prev_color, color.rgb, 1.0 / float(ticks + 1));
+  //color = vec4(0.2, 0.5, 1.0, 1.0);
   imageStore(img, texture_coord, color);
 }
