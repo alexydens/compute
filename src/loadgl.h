@@ -47,7 +47,7 @@ PFNGLBINDVERTEXARRAYPROC glBindVertexArray = NH_NULL;
 PFNGLDELETEVERTEXARRAYSPROC glDeleteVertexArrays = NH_NULL;
 /* Textures */
 PFNGLBINDIMAGETEXTUREPROC glBindImageTexture = NH_NULL;
-
+PFNGLCOPYIMAGESUBDATAPROC glCopyImageSubData = NH_NULL;
 /* Compute shaders */
 PFNGLDISPATCHCOMPUTEPROC glDispatchCompute = NH_NULL;
 PFNGLMEMORYBARRIERPROC glMemoryBarrier = NH_NULL;
@@ -125,6 +125,8 @@ bool loadGL(void) {
 
   glBindImageTexture = (PFNGLBINDIMAGETEXTUREPROC) SDL_GL_GetProcAddress("glBindImageTexture");
   if (glBindImageTexture == NH_NULL) return false;
+  glCopyImageSubData = (PFNGLCOPYIMAGESUBDATAPROC) SDL_GL_GetProcAddress("glCopyImageSubData");
+  if (glCopyImageSubData == NH_NULL) return false;
 
   glDispatchCompute = (PFNGLDISPATCHCOMPUTEPROC) SDL_GL_GetProcAddress("glDispatchCompute");
   if (glDispatchCompute == NH_NULL) return false;

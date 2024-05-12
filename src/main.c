@@ -9,6 +9,7 @@
 /* stdlib includes */
 #include <stdio.h>
 #include <stdlib.h>
+#include <time.h>
 
 /* Project headers */
 #include "loadgl.h"
@@ -27,7 +28,8 @@ struct {
   u32 texture;            /* Texture */
   u32 compute_shader;     /* Compute shader */
   /* Other state */
-  f32 focal_length;
+  f32 focal_length;       /* Focal length */
+  u32 ticks;              /* Ticks since last movement */
 } state;
 
 /* Consts */
@@ -211,7 +213,7 @@ int main(void) {
   glUseProgram(0);
 
   /* Create texture */
-  NH_INFO("Creating texture...");
+  NH_INFO("Creating main texture...");
   glGenTextures(1, &state.texture);
   glBindTexture(GL_TEXTURE_2D, state.texture);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
@@ -265,10 +267,12 @@ int main(void) {
     if (SDL_GetKeyboardState(NULL)[SDL_SCANCODE_UP]) {
       if (state.focal_length < 2.5f)
         state.focal_length += 0.01f;
+      state.ticks = 0;
     }
     if (SDL_GetKeyboardState(NULL)[SDL_SCANCODE_DOWN]) {
       if (state.focal_length > 0.2f)
         state.focal_length -= 0.01f;
+      state.ticks = 0;
     }
 
     /* Clear screen */
@@ -277,24 +281,36 @@ int main(void) {
     /* Render */
     glUseProgram(state.shader_program);
     glBindVertexArray(state.vao);
+
+    /* Bind texture */
     glBindTexture(GL_TEXTURE_2D, state.texture);
 
+    /* Set uniforms */
     glUseProgram(state.compute_shader);
     glUniform1f(glGetUniformLocation(state.compute_shader, "width"), (f32)state.width);
     glUniform1f(glGetUniformLocation(state.compute_shader, "height"), (f32)state.height);
     glUniform1f(glGetUniformLocation(state.compute_shader, "focal_length"), state.focal_length);
+    srand(state.ticks * time(NULL));
     glUniform1ui(glGetUniformLocation(state.compute_shader, "random_seed"), rand());
+    glUniform1ui(glGetUniformLocation(state.compute_shader, "ticks"), state.ticks);
+
+    /* Dispatch compute shader */
     glDispatchCompute(1024 / 32, 1024 / 32, 1);
     glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
-    glUseProgram(state.shader_program);
 
+    /* Draw */
+    glUseProgram(state.shader_program);
     glDrawArrays(GL_TRIANGLES, 0, 6);
 
+    /* Unbind */
     glBindTexture(GL_TEXTURE_2D, 0);
     glBindVertexArray(0);
 
     /* Swap buffers */
     SDL_GL_SwapWindow(state.window);
+
+    /* Increment ticks */
+    state.ticks++;
   }
 
   /* Clean up */
