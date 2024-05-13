@@ -229,8 +229,8 @@ int main(void) {
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-  /*glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);*/
-  /*glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);*/
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
   glTexImage2D(
       GL_TEXTURE_2D,
       0,
@@ -250,8 +250,8 @@ int main(void) {
   state.focal_length = 1.0f;
   state.test_in = 0.0f;
   state.angle_x = 0.0f;
-  state.angle_y = -0.3f;
-  state.camera = (nh_vec3_t){0.0f, 1.5f, 0.0f};
+  state.angle_y = 0.0f;
+  state.camera = (nh_vec3_t){0.0f, 0.0f, 0.0f};
   while (state.running) {
     /* Delta time - 1 */
     u64 start = SDL_GetPerformanceCounter();
@@ -316,32 +316,23 @@ int main(void) {
 
     /* W = move forward */
     if (SDL_GetKeyboardState(NULL)[SDL_SCANCODE_W]) {
-      state.camera.z += 5.0f * state.delta_time;
+      /* Take into account rotation */
+      state.camera.x += sin(state.angle_y) * state.delta_time;
       state.ticks = 0;
     }
     /* S = move backward */
     if (SDL_GetKeyboardState(NULL)[SDL_SCANCODE_S]) {
-      state.camera.z -= 5.0f * state.delta_time;
+      state.camera.x -= sin(state.angle_y) * state.delta_time;
       state.ticks = 0;
     }
     /* A = move left */
     if (SDL_GetKeyboardState(NULL)[SDL_SCANCODE_A]) {
-      state.camera.x -= 5.0f * state.delta_time;
+      state.camera.z += cos(state.angle_y) * state.delta_time;
       state.ticks = 0;
     }
     /* D = move right */
     if (SDL_GetKeyboardState(NULL)[SDL_SCANCODE_D]) {
-      state.camera.x += 5.0f * state.delta_time;
-      state.ticks = 0;
-    }
-    /* Space = move up */
-    if (SDL_GetKeyboardState(NULL)[SDL_SCANCODE_SPACE]) {
-      state.camera.y += 5.0f * state.delta_time;
-      state.ticks = 0;
-    }
-    /* Shift = move down */
-    if (SDL_GetKeyboardState(NULL)[SDL_SCANCODE_LSHIFT]) {
-      state.camera.y -= 5.0f * state.delta_time;
+      state.camera.z -= cos(state.angle_y) * state.delta_time;
       state.ticks = 0;
     }
 
@@ -376,7 +367,6 @@ int main(void) {
     glUniform1f(glGetUniformLocation(state.compute_shader, "test_in"), (f32)state.test_in);
     glUniform1ui(glGetUniformLocation(state.compute_shader, "random_seed"), rand());
     glUniform1ui(glGetUniformLocation(state.compute_shader, "ticks"), state.ticks);
-    glUniform3fv(glGetUniformLocation(state.compute_shader, "camera"), 1, (f32 *)&state.camera);
 
     /* Dispatch compute shader */
     glDispatchCompute(COMPUTE_WIDTH / 32, COMPUTE_HEIGHT / 32, 1);
