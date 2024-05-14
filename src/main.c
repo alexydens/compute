@@ -355,6 +355,16 @@ int main(void) {
       state.test_in -= 20.0f * state.delta_time;
       state.ticks = 0;
     }
+    /* M+W = wireframe mode */
+    if (SDL_GetKeyboardState(NULL)[SDL_SCANCODE_M]
+        && SDL_GetKeyboardState(NULL)[SDL_SCANCODE_W]) {
+      glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    }
+    /* M+R = normal mode */
+    if (SDL_GetKeyboardState(NULL)[SDL_SCANCODE_M]
+        && SDL_GetKeyboardState(NULL)[SDL_SCANCODE_R]) {
+      glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+    }
 
     /* Clear screen */
     glClear(GL_COLOR_BUFFER_BIT);
