@@ -63,16 +63,16 @@ struct HitInfo {
 
 // Spheres
 Sphere spheres[NUM_SPHERES] = {
+/*
   Sphere(vec3(-3.0, 0.0, 5.0), 1.0, Material(vec3(1.0, 0.0, 1.0), 0.75, 0.0, vec3(0.0), 0.3, vec3(1.0))),
   Sphere(vec3(-1.0, 0.0, 5.0), 1.0, Material(vec3(1.0, 1.0, 0.0), 0.75, 0.0, vec3(0.0), 0.3, vec3(1.0))),
   Sphere(vec3( 1.0, 0.0, 5.0), 1.0, Material(vec3(0.0, 1.0, 1.0), 0.75, 0.0, vec3(0.0), 0.3, vec3(1.0))),
   Sphere(vec3( 3.0, 0.0, 5.0), 1.0, Material(vec3(1.0, 0.0, 0.0), 0.75, 0.0, vec3(0.0), 0.3, vec3(1.0))),
-/*
+*/
   Sphere(vec3(-3.0, 0.0, 5.0), 1.0, Material(vec3(1.0), 0.75, 0.0, vec3(0.0), 1.00, vec3(1.0))),
   Sphere(vec3(-1.0, 0.0, 5.0), 1.0, Material(vec3(1.0), 0.75, 0.0, vec3(0.0), 0.66, vec3(1.0))),
   Sphere(vec3( 1.0, 0.0, 5.0), 1.0, Material(vec3(1.0), 0.75, 0.0, vec3(0.0), 0.33, vec3(1.0))),
   Sphere(vec3( 3.0, 0.0, 5.0), 1.0, Material(vec3(1.0), 0.75, 0.0, vec3(0.0), 0.00, vec3(1.0))),
-*/
 };
 Triangle triangles[NUM_TRIANGLES] = {
   // Cornell box
@@ -234,16 +234,14 @@ vec3 trace_ray(Ray ray, inout uint rand_seed) {
       no_hit = false;
       Material material = hit_info.material;
       ray.origin = hit_info.position;
-      //vec3 diffuse = random_hemisphere_direction(rand_seed, hit_info.normal);
       vec3 diffuse = normalize(hit_info.normal + random_direction(rand_seed));
       vec3 specular = hit_info.normal;
       bool is_specular = random_number(rand_seed) < material.specular_probability;
-      ray.direction = mix(specular, diffuse, hit_info.material.roughness * float(!is_specular));
+      ray.direction = mix(specular, diffuse, material.roughness * float(!is_specular));
 
       vec3 emitted_light = material.emission_color * material.emission_strength;
       incoming_light += emitted_light * ray_color;
       ray_color *= mix(material.albedo, material.specular_color, float(is_specular));
-
     } else {
       break;
     }
@@ -273,7 +271,6 @@ void main() {
   ray_target.x *= 2.0; ray_target.x -= 1.0;
   ray_target.y *= 2.0; ray_target.y -= 1.0;
   ray_target.y /= width / height;
-  //ray_target.y /= height / width;
 
   // Set ray properties
   Ray ray;
@@ -291,7 +288,7 @@ void main() {
   vec3 avg_color = vec3(0.0);
   for (int i = 0; i < NUM_RAYS; i++) {
     // Random offset to ray
-    ray.origin += vec3(random_point_in_circle(seed), 0.0) / 75.0;
+    ray.origin += vec3(random_point_in_circle(seed), 0.0) / 100.0;
     // Trace ray
     avg_color += trace_ray(ray, seed);
   }
