@@ -15,7 +15,7 @@ uniform vec3 camera;
 
 // Constants
 #define MAX_BOUNCES   8
-#define NUM_RAYS      32
+#define NUM_RAYS      12
 #define NUM_SPHERES   4
 #define NUM_TRIANGLES 14
 #define PI            3.14159265359
