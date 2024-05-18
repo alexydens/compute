@@ -78,23 +78,23 @@ Sphere spheres[] = {
 Triangle triangles[] = {
   // Cornell box
   // Bottom
-  Triangle(vec3(-5.0, -1.0, 3.0), vec3( 5.0, -1.0, 7.0), vec3(5.0, -1.0, 3.0), Material(vec3(1.0), 1.0, 0.0, vec3(0.0), 0.0, vec3(0.0))),
-  Triangle(vec3(-5.0, -1.0, 3.0), vec3(-5.0, -1.0, 7.0), vec3(5.0, -1.0, 7.0), Material(vec3(1.0), 1.0, 0.0, vec3(0.0), 0.0, vec3(0.0))),
+  Triangle(vec3(-5.0, -1.0, 3.0), vec3( 5.0, -1.0, 7.0), vec3(5.0, -1.0, 3.0), Material(vec3(1.0), 0.8, 0.0, vec3(0.0), 0.0, vec3(0.0))),
+  Triangle(vec3(-5.0, -1.0, 3.0), vec3(-5.0, -1.0, 7.0), vec3(5.0, -1.0, 7.0), Material(vec3(1.0), 0.8, 0.0, vec3(0.0), 0.0, vec3(0.0))),
   // Top
-  Triangle(vec3(-5.0, 3.5, 3.0), vec3(5.0, 3.5, 3.0), vec3( 5.0, 3.5, 7.0), Material(vec3(1.0), 1.0, 0.0, vec3(0.0), 0.0, vec3(0.0))),
-  Triangle(vec3(-5.0, 3.5, 3.0), vec3(5.0, 3.5, 7.0), vec3(-5.0, 3.5, 7.0), Material(vec3(1.0), 1.0, 0.0, vec3(0.0), 0.0, vec3(0.0))),
+  Triangle(vec3(-5.0, 3.5, 3.0), vec3(5.0, 3.5, 3.0), vec3( 5.0, 3.5, 7.0), Material(vec3(1.0), 0.8, 0.0, vec3(0.0), 0.0, vec3(0.0))),
+  Triangle(vec3(-5.0, 3.5, 3.0), vec3(5.0, 3.5, 7.0), vec3(-5.0, 3.5, 7.0), Material(vec3(1.0), 0.8, 0.0, vec3(0.0), 0.0, vec3(0.0))),
   // Left
-  Triangle(vec3(-5.0, -1.0, 3.0), vec3(-5.0, 3.5, 3.0), vec3(-5.0, -1.0, 7.0), Material(vec3(1.0, 0.0, 0.0), 1.0, 0.0, vec3(0.0), 0.0, vec3(0.0))),
-  Triangle(vec3(-5.0, 3.5, 3.0), vec3(-5.0, 3.5, 7.0), vec3(-5.0, -1.0, 7.0), Material(vec3(1.0, 0.0, 0.0), 1.0, 0.0, vec3(0.0), 0.0, vec3(0.0))),
+  Triangle(vec3(-5.0, -1.0, 3.0), vec3(-5.0, 3.5, 3.0), vec3(-5.0, -1.0, 7.0), Material(vec3(1.0, 0.0, 0.0), 0.8, 0.0, vec3(0.0), 0.0, vec3(0.0))),
+  Triangle(vec3(-5.0, 3.5, 3.0), vec3(-5.0, 3.5, 7.0), vec3(-5.0, -1.0, 7.0), Material(vec3(1.0, 0.0, 0.0), 0.8, 0.0, vec3(0.0), 0.0, vec3(0.0))),
   // Right
-  Triangle(vec3(5.0, -1.0, 3.0), vec3(5.0, -1.0, 7.0), vec3(5.0, 3.5, 3.0), Material(vec3(0.0, 1.0, 0.0), 1.0, 0.0, vec3(0.0), 0.0, vec3(0.0))),
-  Triangle(vec3(5.0, 3.5, 3.0), vec3(5.0, -1.0, 7.0), vec3(5.0, 3.5, 7.0), Material(vec3(0.0, 1.0, 0.0), 1.0, 0.0, vec3(0.0), 0.0, vec3(0.0))),
+  Triangle(vec3(5.0, -1.0, 3.0), vec3(5.0, -1.0, 7.0), vec3(5.0, 3.5, 3.0), Material(vec3(0.0, 1.0, 0.0), 0.8, 0.0, vec3(0.0), 0.0, vec3(0.0))),
+  Triangle(vec3(5.0, 3.5, 3.0), vec3(5.0, -1.0, 7.0), vec3(5.0, 3.5, 7.0), Material(vec3(0.0, 1.0, 0.0), 0.8, 0.0, vec3(0.0), 0.0, vec3(0.0))),
   // Back
-  Triangle(vec3(-5.0, -1.0, 7.0), vec3(5.0, 3.5, 7.0), vec3(5.0, -1.0, 7.0), Material(vec3(1.0), 1.0, 0.0, vec3(0.0), 0.0, vec3(0.0))),
-  Triangle(vec3(-5.0, -1.0, 7.0), vec3(-5.0, 3.5, 7.0), vec3(5.0, 3.5, 7.0), Material(vec3(1.0), 1.0, 0.0, vec3(0.0), 0.0, vec3(0.0))),
+  Triangle(vec3(-5.0, -1.0, 7.0), vec3(5.0, 3.5, 7.0), vec3(5.0, -1.0, 7.0), Material(vec3(1.0), 0.8, 0.0, vec3(0.0), 0.0, vec3(0.0))),
+  Triangle(vec3(-5.0, -1.0, 7.0), vec3(-5.0, 3.5, 7.0), vec3(5.0, 3.5, 7.0), Material(vec3(1.0), 0.8, 0.0, vec3(0.0), 0.0, vec3(0.0))),
   // Front
-  Triangle(vec3(-5.0, -1.0, 3.0), vec3(5.0, -1.0, 3.0), vec3(5.0, 3.5, 3.0), Material(vec3(1.0), 1.0, 0.0, vec3(0.0), 0.0, vec3(0.0))),
-  Triangle(vec3(-5.0, -1.0, 3.0), vec3(5.0, 3.5, 3.0), vec3(-5.0, 3.5, 3.0), Material(vec3(1.0), 1.0, 0.0, vec3(0.0), 0.0, vec3(0.0))),
+  Triangle(vec3(-5.0, -1.0, 3.0), vec3(5.0, -1.0, 3.0), vec3(5.0, 3.5, 3.0), Material(vec3(1.0), 0.8, 0.0, vec3(0.0), 0.0, vec3(0.0))),
+  Triangle(vec3(-5.0, -1.0, 3.0), vec3(5.0, 3.5, 3.0), vec3(-5.0, 3.5, 3.0), Material(vec3(1.0), 0.8, 0.0, vec3(0.0), 0.0, vec3(0.0))),
 
   // Light
   Triangle(vec3(-1.0, 3.0, 4.0), vec3(1.0, 3.0, 4.0), vec3(1.0, 3.0, 6.0), Material(vec3(0.0), 0.0, test_in, vec3(1.0), 0.0, vec3(0.0))),
@@ -103,30 +103,8 @@ Triangle triangles[] = {
 
 // RNG
 float random_number(inout uint state) {
-  state = state * 747796405u + 2891336453u;
-  uint result = ((state >> ((state >> 28u) + 4u)) ^ state) * 277803737u;
-	result = (result >> 22) ^ result;
-  return float(result) / 4294967295.0;
-  
-#if 0
-  // Link: https://www.shadertoy.com/view/XlGcRh
-  uint hash = 4u, tmp;
-
-  hash += state & 0xffffu;
-  tmp = (((state >> 16) & 0xffffu) << 11) ^ hash;
-  hash = (hash << 16) ^ tmp;
-  hash += hash >> 11;
-
-  /* Force "avalanching" of final 127 bits */
-  hash ^= hash << 3;
-  hash += hash >> 5;
-  hash ^= hash << 4;
-  hash += hash >> 17;
-  hash ^= hash << 25;
-  hash += hash >> 6;
-
-  return float(hash) / 4294967295.0;
-#endif
+  state = ((state >> 16) ^ (state * 32432u));
+  return float(state) / 4294967295.0;
 }
 // In normal weighted distribution
 float random_number_normal(inout uint state) {
@@ -282,8 +260,8 @@ void main() {
   ivec2 texture_coord = ivec2(gl_GlobalInvocationID.xy);
   uint seed = 0;
   seed += random_seed * 12092u;
-  seed += gl_GlobalInvocationID.x * 23423u;
-  seed += gl_GlobalInvocationID.y * 34534u;
+  seed += gl_GlobalInvocationID.x * 3452u;
+  seed += gl_GlobalInvocationID.y * 1234u;
   seed += ticks * 17492u;
   
   // Get ray target position
