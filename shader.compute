@@ -288,7 +288,7 @@ void main() {
   vec3 avg_color = vec3(0.0);
   for (int i = 0; i < NUM_RAYS; i++) {
     // Random offset to ray
-    ray.origin += vec3(random_point_in_circle(seed), 0.0) * 0.01;
+    ray.origin += vec3(random_point_in_circle(seed), 0.0) * 0.015;
     // Trace ray
     avg_color += trace_ray(ray, seed);
   }
@@ -298,12 +298,6 @@ void main() {
   // Return color
   vec4 prev_color = imageLoad(img, texture_coord);
   color.rgb = mix(prev_color.rgb, color.rgb, 1.0 / float(ticks + 1));
-
-  //for (int i = 0; i < 1000; i++)
-    //color.rgb = random_direction(seed);
-  
-  //for (int i = 0; i < 25; i++)
-    //color.rgb = (closest_intersection(ray).normal + 1.0) / 2.0;
 
   imageStore(img, texture_coord, color);
 }

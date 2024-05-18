@@ -11,7 +11,7 @@ CFLAGS += -DDEBUG
 CFLAGS += -ggdb
 LDFLAGS = -ffast-math
 LDFLAGS += -lm
-LDFLAGS += -lSDL2
+LDFLAGS += -lSDL2 -lSDL2_image
 LDFLAGS += -lGL
 
 # Files
