@@ -129,7 +129,7 @@ void render_character(char c, nh_vec2_t pos, f32 scale) {
 }
 void render_string(const char *str, nh_vec2_t pos, f32 scale) {
   for (u32 i = 0; str[i] != '\0'; i++) {
-    render_character(str[i], (nh_vec2_t){pos.x+i*scale, pos.y}, scale);
+    render_character(str[i], (nh_vec2_t){pos.x+(i+1)*scale, pos.y}, scale);
   }
 }
 
@@ -491,7 +491,7 @@ int main(void) {
     glBindVertexArray(0);
 
     /* Render string */
-    render_string("Hello world!", (nh_vec2_t){-0.5f, 0.9f}, 0.1f);
+    render_string("Hello world!", (nh_vec2_t){-1.0f, 0.975f}, 0.025f);
 
     /* Swap buffers */
     SDL_GL_SwapWindow(state.window);
