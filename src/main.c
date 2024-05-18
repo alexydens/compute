@@ -491,6 +491,7 @@ int main(void) {
     glBindVertexArray(0);
 
     /* Render string */
+    //render_string("Hello world!", (nh_vec2_t){-1.0f, 0.975f}, 0.025f);
     render_string("Hello world!", (nh_vec2_t){-1.0f, 0.975f}, 0.025f);
 
     /* Swap buffers */
