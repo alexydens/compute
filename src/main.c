@@ -25,6 +25,7 @@ struct {
   SDL_GLContext context;        /* OpenGL context handle */
   bool running;                 /* Is the window running? */
   i32 width, height;            /* Window dimensions */
+  const u8 *keys;               /* Key states */
   /* OpenGL */
   u32 vbo;                      /* Vertex buffer object */
   u32 vao;                      /* Vertex array object */
@@ -252,6 +253,7 @@ int main(void) {
   state.angle_x = 0.0f;
   state.angle_y = -0.3f;
   state.camera = (nh_vec3_t){0.0f, 1.5f, 0.0f};
+  state.keys = SDL_GetKeyboardState(NULL);
   while (state.running) {
     /* Delta time - 1 */
     u64 start = SDL_GetPerformanceCounter();
@@ -283,86 +285,86 @@ int main(void) {
 
     /* Check for keydown */
     /* I = increase focal length (zoom in) */
-    if (SDL_GetKeyboardState(NULL)[SDL_SCANCODE_I]) {
+    if (state.keys[SDL_SCANCODE_I]) {
       state.focal_length += 2.0f * state.delta_time;
       state.ticks = 0;
     }
     /* O = decrease focal length (zoom out) */
-    if (SDL_GetKeyboardState(NULL)[SDL_SCANCODE_O]) {
+    if (state.keys[SDL_SCANCODE_O]) {
       state.focal_length -= 2.0f * state.delta_time;
       state.ticks = 0;
     }
 
     /* Right = rotate right */
-    if (SDL_GetKeyboardState(NULL)[SDL_SCANCODE_RIGHT]) {
+    if (state.keys[SDL_SCANCODE_RIGHT]) {
       state.angle_x -= 1.0f * state.delta_time;
       state.ticks = 0;
     }
     /* Left = rotate left */
-    if (SDL_GetKeyboardState(NULL)[SDL_SCANCODE_LEFT]) {
+    if (state.keys[SDL_SCANCODE_LEFT]) {
       state.angle_x += 1.0f * state.delta_time;
       state.ticks = 0;
     }
     /* Up = rotate up */
-    if (SDL_GetKeyboardState(NULL)[SDL_SCANCODE_UP]) {
+    if (state.keys[SDL_SCANCODE_UP]) {
       state.angle_y += 1.0f * state.delta_time;
       state.ticks = 0;
     }
     /* Down = rotate down */
-    if (SDL_GetKeyboardState(NULL)[SDL_SCANCODE_DOWN]) {
+    if (state.keys[SDL_SCANCODE_DOWN]) {
       state.angle_y -= 1.0f * state.delta_time;
       state.ticks = 0;
     }
 
     /* W = move forward */
-    if (SDL_GetKeyboardState(NULL)[SDL_SCANCODE_W]) {
+    if (state.keys[SDL_SCANCODE_W]) {
       state.camera.z += 5.0f * state.delta_time;
       state.ticks = 0;
     }
     /* S = move backward */
-    if (SDL_GetKeyboardState(NULL)[SDL_SCANCODE_S]) {
+    if (state.keys[SDL_SCANCODE_S]) {
       state.camera.z -= 5.0f * state.delta_time;
       state.ticks = 0;
     }
     /* A = move left */
-    if (SDL_GetKeyboardState(NULL)[SDL_SCANCODE_A]) {
+    if (state.keys[SDL_SCANCODE_A]) {
       state.camera.x -= 5.0f * state.delta_time;
       state.ticks = 0;
     }
     /* D = move right */
-    if (SDL_GetKeyboardState(NULL)[SDL_SCANCODE_D]) {
+    if (state.keys[SDL_SCANCODE_D]) {
       state.camera.x += 5.0f * state.delta_time;
       state.ticks = 0;
     }
     /* Space = move up */
-    if (SDL_GetKeyboardState(NULL)[SDL_SCANCODE_SPACE]) {
+    if (state.keys[SDL_SCANCODE_SPACE]) {
       state.camera.y += 5.0f * state.delta_time;
       state.ticks = 0;
     }
     /* Shift = move down */
-    if (SDL_GetKeyboardState(NULL)[SDL_SCANCODE_LSHIFT]) {
+    if (state.keys[SDL_SCANCODE_LSHIFT]) {
       state.camera.y -= 5.0f * state.delta_time;
       state.ticks = 0;
     }
 
     /* Plus = increase test in */
-    if (SDL_GetKeyboardState(NULL)[SDL_SCANCODE_KP_PLUS]) {
+    if (state.keys[SDL_SCANCODE_KP_PLUS]) {
       state.test_in += 20.0f * state.delta_time;
       state.ticks = 0;
     }
     /* Minus = decrease test in */
-    if (SDL_GetKeyboardState(NULL)[SDL_SCANCODE_KP_MINUS]) {
+    if (state.keys[SDL_SCANCODE_KP_MINUS]) {
       state.test_in -= 20.0f * state.delta_time;
       state.ticks = 0;
     }
     /* M+W = wireframe mode */
-    if (SDL_GetKeyboardState(NULL)[SDL_SCANCODE_M]
-        && SDL_GetKeyboardState(NULL)[SDL_SCANCODE_W]) {
+    if (state.keys[SDL_SCANCODE_M]
+        && state.keys[SDL_SCANCODE_W]) {
       glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
     }
     /* M+R = normal mode */
-    if (SDL_GetKeyboardState(NULL)[SDL_SCANCODE_M]
-        && SDL_GetKeyboardState(NULL)[SDL_SCANCODE_R]) {
+    if (state.keys[SDL_SCANCODE_M]
+        && state.keys[SDL_SCANCODE_R]) {
       glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
     }
 
