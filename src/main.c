@@ -641,8 +641,8 @@ int main(void) {
     glBindVertexArray(0);
 
     /* Render hints */
-    render_string("[M][W]       = wireframe", (nh_vec2_t){-0.925f, -0.925f}, 0.025f);
-    render_string("[M][R]       = regular", (nh_vec2_t){-0.925f, -0.875f}, 0.025f);
+    render_string("[M]+[W]      = wireframe", (nh_vec2_t){-0.925f, -0.925f}, 0.025f);
+    render_string("[M]+[R]      = regular", (nh_vec2_t){-0.925f, -0.875f}, 0.025f);
     render_string("[W][A][S][D] = move", (nh_vec2_t){-0.925f, -0.825f}, 0.025f);
     render_string("<ARROW-KEYS> = look", (nh_vec2_t){-0.925f, -0.775f}, 0.025f);
     /* Render sliders */
