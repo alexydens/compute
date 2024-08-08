@@ -15,7 +15,7 @@ uniform vec3 camera;
 
 // Constants
 #define MAX_BOUNCES   8
-#define NUM_RAYS      8
+#define NUM_RAYS      4
 #define NUM_TRIANGLES 14
 #define NUM_SPHERES   4
 #define PI            3.14159265359
@@ -308,7 +308,8 @@ void main() {
   vec3 avg_color = vec3(0.0);
   for (int i = 0; i < NUM_RAYS; i++) {
     // Random offset to ray
-    ray.origin += vec3(random_point_in_circle(seed), 0.0) * 0.015;
+    ray.origin += vec3(random_point_in_circle(seed), 0.0) * 0.005;
+    //ray.origin += vec3(random_point_in_circle(seed), 0.0) * 0.015;
     // Trace ray
     avg_color += trace_ray(ray, seed);
   }
