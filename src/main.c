@@ -11,6 +11,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
+#include <math.h>
 
 /* Project headers */
 #include "loadgl.h"
@@ -31,6 +32,7 @@ typedef struct {
 #define COMPUTE_HEIGHT      512
 #define FONT_COLS           24
 #define FONT_ROWS           4
+#define MOVEMENT_SPEED      5.0f
 
 const char *font_chars =  " !\"#$%&'()*+,-./01234567"
                           "89:;<=>?@ABCDEFGHIJKLMNO"
@@ -409,10 +411,10 @@ int main(void) {
   glBindTexture(GL_TEXTURE_2D, state.texture);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-  /*glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);*/
-  /*glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);*/
+  /*glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);*/
+  /*glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);*/
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
   glTexImage2D(
       GL_TEXTURE_2D,
       0,
@@ -514,33 +516,37 @@ int main(void) {
     }
     /* Up = rotate up */
     if (state.keys[SDL_SCANCODE_UP]) {
-      state.angle_y += 1.0f * state.delta_time;
+      state.angle_y -= 1.0f * state.delta_time;
       state.ticks = 0;
     }
     /* Down = rotate down */
     if (state.keys[SDL_SCANCODE_DOWN]) {
-      state.angle_y -= 1.0f * state.delta_time;
+      state.angle_y += 1.0f * state.delta_time;
       state.ticks = 0;
     }
 
     /* W = move forward */
     if (state.keys[SDL_SCANCODE_W]) {
-      state.camera.z += 5.0f * state.delta_time;
+      state.camera.x -= MOVEMENT_SPEED * state.delta_time * sinf(state.angle_x);
+      state.camera.z += MOVEMENT_SPEED * state.delta_time * cosf(state.angle_x);
       state.ticks = 0;
     }
     /* S = move backward */
     if (state.keys[SDL_SCANCODE_S]) {
-      state.camera.z -= 5.0f * state.delta_time;
+      state.camera.x += MOVEMENT_SPEED * state.delta_time * sinf(state.angle_x);
+      state.camera.z -= MOVEMENT_SPEED * state.delta_time * cosf(state.angle_x);
       state.ticks = 0;
     }
     /* A = move left */
     if (state.keys[SDL_SCANCODE_A]) {
-      state.camera.x -= 5.0f * state.delta_time;
+      state.camera.x -= MOVEMENT_SPEED * state.delta_time * cosf(state.angle_x);
+      state.camera.z -= MOVEMENT_SPEED * state.delta_time * sinf(state.angle_x);
       state.ticks = 0;
     }
     /* D = move right */
     if (state.keys[SDL_SCANCODE_D]) {
-      state.camera.x += 5.0f * state.delta_time;
+      state.camera.x += MOVEMENT_SPEED * state.delta_time * cosf(state.angle_x);
+      state.camera.z += MOVEMENT_SPEED * state.delta_time * sinf(state.angle_x);
       state.ticks = 0;
     }
     /* Space = move up */
